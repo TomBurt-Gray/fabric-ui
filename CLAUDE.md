@@ -64,6 +64,7 @@ Keep this section updated as tooling is added. Python tooling uses uv (dev and b
 * Tests: `uv run pytest`
 * Run locally: copy `.env.example` to `.env` (enables the dev sign in shim; set `DEV_AUTH_ROLES` to test roles), then `uv run --env-file .env python app/manage.py migrate` and `uv run --env-file .env python app/manage.py runserver` (stub data mode by default)
 * Every view needs an access rule from `core.access` (`require_roles`, `any_role` or `public`); undeclared views are denied and a test fails
+* Audit: declare each feature's events in its own module as `@register`ed dataclasses subclassing `audit.events.AuditEventType`; wrap business changes in `audit.service.audited_action`; list events with `uv run python app/manage.py audit_events`
 * Container: `docker build -t fabric-ui .`
 * Terraform: `terraform fmt -check`, `terraform validate`, `tflint`, then `terraform plan -var-file=../envs/internal_dev.tfvars` from `infra/stack`
 

@@ -88,11 +88,15 @@ Validate the YAML on startup with clear errors. Unknown tables or columns are lo
 
 ### Audit
 
-* `AuditEvent`: id, timestamp (UTC), actor object ID, role, action, target, detail (JSON), correlation ID, client IP, user agent, outcome.
-* Middleware writes one event per request; domain helpers write richer events (export, report run, issue raised).
-* On Azure SQL, the table is an append only ledger table, created by a migration that runs only when the database vendor is Microsoft. On SQLite the model blocks update and delete in code.
-* Ledger digests stored in the immutable storage account. Note: ledger cannot be disabled once enabled.
-* Daily job exports the previous day's events as JSON lines to the immutable container.
+Implemented in M2 (`app/audit/`).
+
+* **One table, typed payloads (D20).** `AuditEvent` holds core columns mapped from the legacy trade blotter schema: `event_id` (AuditEventKey), `occurred_at` and `recorded_at` (Date, Time, AuditDateTime, Store_Datetime), `event_type`, `category` (EventCategory), `outcome`, `schema_version`, `source_system` and `environment` (Source, Context), `actor_object_id` and `actor_roles` (User), `target` and `target_detail` (Item, SubItem), `before` and `after` (BeforeValue, AfterValue), `message` (LongText), `correlation_id`, `client_ip` and `user_agent` (Device). JSON columns are stored as text (`nvarchar(max)`) so the table stays eligible for Fabric mirroring.
+* **Event classes.** Each feature declares events as frozen dataclasses subclassing `audit.events.AuditEventType`, decorated with `@register`. Their typed fields become `detail.fields`; `static_fields` from the audit config become `detail.context`. Trade specific legacy fields (OrderID, WorkbookType, WorkbookRole, LifecycleStage, IsTradeReconstructionEvent) become fields of trade event classes in Phase 2. `python app/manage.py audit_events` prints the catalogue.
+* **Same transaction (D17).** Features wrap changes in `audit.service.audited_action(request, event)`: the change and the audit row commit together or not at all. `record()` is used directly only where nothing changes (access denied, before streaming an export). Audit write failures raise `AuditUnavailable`, which `AuditFailureMiddleware` turns into a 503 page with Try again.
+* **Access denied.** Every 403 writes `auth.access_denied`; the denial stands even if that write fails. 401s are not audited (no identity; Entra sign in logs cover them).
+* **Append only.** On Azure SQL the migration creates an append only ledger table (`WITH (LEDGER = ON (APPEND_ONLY = ON))`, needs `ENABLE LEDGER`; ledger cannot be disabled once enabled). On SQLite the model, queryset and database triggers refuse updates and deletes.
+* **Config.** `config/audit.example.yaml` (path from `AUDIT_CONFIG`): `source_system`, `environment`, `capture_network`, `client_ip_header`, `static_fields`.
+* **Later.** Ledger digests to the immutable storage account and the daily JSON lines archive need storage (M7). Lakehouse reporting copy via Fabric mirroring once support for append only ledger tables is confirmed (D19).
 
 ### Support issues
 

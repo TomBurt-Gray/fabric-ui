@@ -42,6 +42,7 @@ DEV_AUTH_OBJECT_ID = os.environ.get("DEV_AUTH_OBJECT_ID", "00000000-0000-0000-00
 CONFIG_DIR = Path(os.environ.get("CONFIG_DIR") or BASE_DIR.parent / "config")
 BRANDING_CONFIG = Path(os.environ.get("BRANDING_CONFIG") or CONFIG_DIR / "branding.example.yaml")
 BRANDING_ASSETS_DIR = CONFIG_DIR / "branding"
+AUDIT_CONFIG = Path(os.environ.get("AUDIT_CONFIG") or CONFIG_DIR / "audit.example.yaml")
 
 # No django.contrib.auth or sessions: identity comes only from Entra via Easy Auth (D16).
 INSTALLED_APPS = [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.EasyAuthMiddleware",
+    "audit.middleware.AuditFailureMiddleware",
 ]
 if DEV_AUTH_ENABLED:
     MIDDLEWARE.insert(0, "core.dev_auth.DevPrincipalMiddleware")

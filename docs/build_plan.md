@@ -6,7 +6,7 @@ Work one milestone at a time. Start each in plan mode, confirm the plan, then bu
 |:--|:--|:--|
 | M0 | Repo scaffold | ruff, pytest and `manage.py check` pass; Docker build pending (Docker not installed) |
 | M1 | Django foundation: auth, roles, layout, correlation IDs | Done locally (77 tests); claim types to verify in internal dev |
-| M2 | Audit | Not started |
+| M2 | Audit | Done locally (120 tests); ledger migration to run on Azure SQL in M7/M8 |
 | M3 | Support issues and email | Not started |
 | M4 | Catalogue and dynamic table viewer on stub data | Not started |
 | M5 | Fabric SQL endpoint data source | Not started |
@@ -30,9 +30,9 @@ Work one milestone at a time. Start each in plan mode, confirm the plan, then bu
 
 ## M2 Audit
 
-* `AuditEvent` model, request middleware, `audit.record()` helper.
-* Ledger migration conditional on Microsoft vendor; code level append only guard on other databases.
-* Done when: every view in M1 produces an audit event; update and delete attempts fail in tests.
+* `AuditEvent` model, typed event classes with a registry, `record()` and `audited_action()`, failure page with Try again, access denied events.
+* Ledger migration conditional on Microsoft vendor; model, queryset and SQLite triggers block updates and deletes elsewhere.
+* Done when: an audit write failure rolls back the business change in tests; every 403 writes an event; update and delete attempts fail in tests, including raw SQL.
 
 ## M3 Support issues and email
 

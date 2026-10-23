@@ -1,0 +1,11 @@
+# Audit settings per environment. Synthetic example: copy per environment and point
+# AUDIT_CONFIG at the copy.
+source_system: fabric-ui
+environment: internal_dev
+# Client IP address and user agent on every event. Personal data under GDPR and kept in an
+# append only ledger, so the client's compliance team must approve before enabling in production.
+capture_network: true
+# Header carrying the caller's address; the first address in the list is used.
+client_ip_header: X-Forwarded-For
+# Extra key values added to every event's detail, for client specific context without code.
+static_fields: {}

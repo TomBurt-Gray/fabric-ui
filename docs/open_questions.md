@@ -18,14 +18,18 @@ Do not guess these. Use the stated assumption until answered, and flag anything 
 | # | Question | Status or working assumption |
 |:--|:--|:--|
 | Q7 | `fabric_connectivity` defaults to `public`, against hard rule 8. What did another client implement? | Awaiting answer. Do not build M7 networking on it yet |
-| Q8 | Audit scope and shape. FR10 is changing from "every request" to business audit events shaped like the existing trade blotter audit schema (Context, Source, User, Device, Item, SubItem, BeforeValue, AfterValue, LifecycleStage, EventCategory, OrderID, IsTradeReconstructionEvent, AuditEventKey and timestamps). Open: generic core plus domain extension; whether other business applications send events to this service; which PoC actions (export, report run, issue raised) are audited | Plain request logging goes to Application Insights, not the audit store. Settle at M2 planning, then update requirements and architecture |
-| Q9 | `User` and `Device` (and client IP, user agent) are personal data. D12 says immutable stores hold the Entra object ID only | Store object ID only until agreed |
-| Q10 | What happens if an audit write fails (e.g. Azure SQL serverless resuming)? Block the action or not? | Undecided; settle at M2 planning |
+| Q8 | Audit scope and shape. FR10 is changing from "every request" to business audit events shaped like the existing trade blotter audit schema (Context, Source, User, Device, Item, SubItem, BeforeValue, AfterValue, LifecycleStage, EventCategory, OrderID, IsTradeReconstructionEvent, AuditEventKey and timestamps). Open: generic core plus domain extension; whether other business applications send events to this service; which PoC actions (export, report run, issue raised) are audited | Answered: one table with core columns and typed payloads per event class (D20); this app provides the base class, features and client versions extend it; PoC events are access denied, data viewed, exports and report runs, issues raised. Trade lifecycle detail to follow |
+| Q9 | `User` and `Device` (and client IP, user agent) are personal data. D12 says immutable stores hold the Entra object ID only | Answered: captured behind `capture_network`, default on, in the client's own database (D18); production use needs client compliance approval |
+| Q10 | What happens if an audit write fails (e.g. Azure SQL serverless resuming)? Block the action or not? | Answered: the action does not happen; user sees Try again (D17) |
 | Q11 | Roles: Entra app roles or group membership as primary? | Answered: app roles assigned to groups (D14), independent (D15) |
 | Q12 | Support: in app ticket draft with captured context (URL, filters, correlation ID, visible rows), email carries the reference only. How is the draft generated (template or AI) and which ticketing system is the target? | Settle at M3 planning, then update requirements and architecture |
 | Q13 | Microsoft ODBC Driver 18 requires accepting the Microsoft EULA (`ACCEPT_EULA=Y`). Who authorises this? | Install step commented out in the Dockerfile; blocks M5 |
 | Q14 | mssql-django 2.x adds mssql-python as a dependency | Pinned 1.8.0 (pyodbc only); revisit as a separate decision |
 | Q15 | CI agents need an Anthropic API key from Mirador's organisation (not a personal account), ideally a dedicated workspace with a spend limit. Who can issue it? | Agents disabled (`CLAUDE_AGENTS_ENABLED` unset) until a company key exists |
+| Q16 | Which header carries the caller's IP on App Service behind a private endpoint? Not stated on Microsoft Learn | `client_ip_header: X-Forwarded-For` (first address); verify in internal dev (M8) |
+| Q17 | Does Fabric mirroring support append only ledger tables? The limits page excludes "ledger history tables" (append only tables have none) but does not say explicitly | Do not rely on mirroring for the Lakehouse audit copy until verified |
+| Q18 | Ledger rows can never be deleted. How do retention limits and GDPR erasure requests apply to IP addresses in the audit? | Client compliance to decide before enabling `capture_network` in production |
+| Q19 | The audit ledger migration has only been checked by generating its SQL offline | Run against Azure SQL in M7/M8, including the `ENABLE LEDGER` permission for the migration identity |
 
 ## Client (answered later via the Client Discovery Checklist)
 
@@ -37,6 +41,8 @@ These do not block the PoC. The Terraform inputs already cover each variant.
 * Entra admin consent, service principal RBAC, Graph Mail.Send scoping.
 * Audit retention period, regulatory requirements, whether support details may leave the tenant by email.
 * Whether per user Fabric row level security is required (would change D05).
+* Confirm only company managed devices can reach the app (network and Entra Conditional Access), and whether IP and user agent capture in the audit is approved (Q18).
+* Entra ID P1 or higher, needed to assign groups to app roles (D14).
 
 ## Deferred design topics
 
