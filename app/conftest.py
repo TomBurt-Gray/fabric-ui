@@ -3,6 +3,7 @@ from typing import Any
 
 import pytest
 from core.principal import Role, encode_principal
+from django.db import DatabaseError
 
 TEST_OBJECT_ID = "00000000-0000-0000-0000-0000000000aa"
 
@@ -31,3 +32,14 @@ def signed_in() -> Callable[..., dict[str, str]]:
         return {"HTTP_X_MS_CLIENT_PRINCIPAL": header}
 
     return make
+
+
+@pytest.fixture
+def failing_audit_store(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make every audit insert fail as if the database were unavailable."""
+    from audit.models import AuditEvent
+
+    def fail(self: AuditEvent, *args: object, **kwargs: object) -> None:
+        raise DatabaseError("audit store unavailable")
+
+    monkeypatch.setattr(AuditEvent, "save", fail)

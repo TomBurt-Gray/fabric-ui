@@ -24,6 +24,8 @@ from audit.models import AuditEvent
 
 logger = logging.getLogger(__name__)
 
+SYSTEM_ACTOR = "system"
+
 
 class AuditUnavailable(Exception):
     """The audit record could not be written, so the action must not go ahead."""
@@ -61,13 +63,15 @@ def _client_ip(request: HttpRequest, header: str) -> str:
     return ""
 
 
-def build_entry(request: HttpRequest, draft: AuditDraft) -> AuditEvent:
+def build_entry(request: HttpRequest | None, draft: AuditDraft) -> AuditEvent:
+    """Build an unsaved row. ``request`` is None for work the app does itself (actor ``system``)."""
     event = draft.event
     if not is_registered(event):
         raise ValueError(f"{type(event).__name__} is not a registered audit event type")
     config = get_audit_config()
     principal = getattr(request, "principal", None)
     detail = {"fields": event.payload(), "context": config.static_fields}
+    capture = config.capture_network and request is not None
     return AuditEvent(
         occurred_at=timezone.now(),
         event_type=event.event_type,
@@ -76,7 +80,11 @@ def build_entry(request: HttpRequest, draft: AuditDraft) -> AuditEvent:
         schema_version=event.schema_version,
         source_system=config.source_system,
         environment=config.environment,
-        actor_object_id=principal.object_id if principal else "",
+        actor_object_id=principal.object_id
+        if principal
+        else SYSTEM_ACTOR
+        if request is None
+        else "",
         actor_roles=",".join(sorted(principal.roles)) if principal else "",
         target=draft.target[:256],
         target_detail=draft.target_detail[:512],
@@ -85,9 +93,19 @@ def build_entry(request: HttpRequest, draft: AuditDraft) -> AuditEvent:
         detail=_json(detail),
         message=draft.message[:512],
         correlation_id=getattr(request, "correlation_id", "") or current_correlation_id(),
-        client_ip=_client_ip(request, config.client_ip_header) if config.capture_network else "",
-        user_agent=request.headers.get("User-Agent", "")[:512] if config.capture_network else "",
+        client_ip=_client_ip(request, config.client_ip_header) if capture else "",
+        user_agent=request.headers.get("User-Agent", "")[:512] if capture else "",
     )
+
+
+def _save(entry: AuditEvent) -> AuditEvent:
+    try:
+        with transaction.atomic():
+            entry.save(force_insert=True)
+    except DatabaseError as exc:
+        logger.exception("Audit write failed for %s", entry.event_type)
+        raise AuditUnavailable(entry.event_type) from exc
+    return entry
 
 
 def record(
@@ -103,14 +121,22 @@ def record(
 ) -> AuditEvent:
     """Write one audit event, joining the caller's transaction if there is one."""
     draft = AuditDraft(event, target, target_detail, before, after, outcome, message)
-    entry = build_entry(request, draft)
-    try:
-        with transaction.atomic():
-            entry.save(force_insert=True)
-    except DatabaseError as exc:
-        logger.exception("Audit write failed for %s", event.event_type)
-        raise AuditUnavailable(event.event_type) from exc
-    return entry
+    return _save(build_entry(request, draft))
+
+
+def record_system(
+    event: AuditEventType,
+    *,
+    target: str = "",
+    target_detail: str = "",
+    before: Any = None,
+    after: Any = None,
+    outcome: Outcome = Outcome.SUCCESS,
+    message: str = "",
+) -> AuditEvent:
+    """Write an event for work the app does itself, such as a scheduled job (actor ``system``)."""
+    draft = AuditDraft(event, target, target_detail, before, after, outcome, message)
+    return _save(build_entry(None, draft))
 
 
 @contextlib.contextmanager

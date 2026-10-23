@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ issue.reference }} | {{ branding.app_name }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'support:issue_list' %}">All support issues</a></p>
+<h1>{{ issue.reference }}: {{ issue.subject }}</h1>
+
+<dl class="detail-list">
+  <dt>Type</dt><dd>{{ issue.get_type_display }}</dd>
+  <dt>Raised</dt><dd>{{ issue.created_at|date:"d M Y H:i" }} UTC</dd>
+  <dt>Raised by</dt><dd>{{ issue.requester_name }} ({{ issue.requester_email }})</dd>
+  <dt>Impact</dt><dd>{{ issue.impact_labels|join:", "|default:"None reported" }}</dd>
+  <dt>Page</dt><dd>{% if issue.page_url %}<a href="{{ issue.page_url }}">{{ issue.page_url }}</a>{% else %}Not captured{% endif %}</dd>
+  <dt>Filters</dt><dd><code>{{ issue.filters|default:"None" }}</code></dd>
+  <dt>Correlation ID</dt><dd><code>{{ issue.page_correlation_id|default:"Not captured" }}</code></dd>
+  <dt>Browser</dt><dd>{{ issue.user_agent|default:"Not captured" }}</dd>
+</dl>
+
+<h2>Description</h2>
+<p class="pre">{{ issue.description }}</p>
+{% if issue.expected_behaviour %}<h2>Expected</h2><p class="pre">{{ issue.expected_behaviour }}</p>{% endif %}
+{% if issue.actual_behaviour %}<h2>What happened</h2><p class="pre">{{ issue.actual_behaviour }}</p>{% endif %}
+{% if issue.steps_to_reproduce %}<h2>Steps to reproduce</h2><p class="pre">{{ issue.steps_to_reproduce }}</p>{% endif %}
+{% if issue.workaround %}<h2>Workaround</h2><p class="pre">{{ issue.workaround }}</p>{% endif %}
+
+<h2>Delivery</h2>
+{% for delivery in issue.deliveries.all %}
+<p>{{ delivery.channel|capfirst }}: {{ delivery.get_status_display }} after {{ delivery.attempts }} attempt{{ delivery.attempts|pluralize }}{% if delivery.sent_at %}, sent {{ delivery.sent_at|date:"d M Y H:i" }} UTC{% endif %}{% if delivery.last_error %}. Last error: {{ delivery.last_error }}{% endif %}</p>
+{% endfor %}
+{% endblock %}

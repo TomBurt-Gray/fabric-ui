@@ -7,7 +7,7 @@ Work one milestone at a time. Start each in plan mode, confirm the plan, then bu
 | M0 | Repo scaffold | ruff, pytest and `manage.py check` pass; Docker build pending (Docker not installed) |
 | M1 | Django foundation: auth, roles, layout, correlation IDs | Done locally (77 tests); claim types to verify in internal dev |
 | M2 | Audit | Done locally (120 tests); ledger migration to run on Azure SQL in M7/M8 |
-| M3 | Support issues and email | Not started |
+| M3 | Support issues and email | Done locally (167 tests, browser checked); Graph sending to verify in M8 |
 | M4 | Catalogue and dynamic table viewer on stub data | Not started |
 | M5 | Fabric SQL endpoint data source | Not started |
 | M6 | Exports and on demand reports | Not started |
@@ -36,10 +36,10 @@ Work one milestone at a time. Start each in plan mode, confirm the plan, then bu
 
 ## M3 Support issues and email
 
-* HTMX modal on every page; auto captures page, filters, correlation ID, user agent.
-* `SupportIssue`, `EmailOutbox`, Graph sender behind an interface with a console sender for local dev.
-* Management command to retry the outbox (later run by the Container Apps job).
-* Done when: an issue is saved even if the sender raises; retry sends it; payload validates against `support_issue.v1`.
+* HTMX dialog on every page; auto captures page, filters, correlation ID, user agent.
+* `SupportIssue`, `Delivery` outbox, Graph sender behind an interface with a console sender for local dev; support role views.
+* Management command `send_outbox` to retry (later run by the Container Apps job).
+* Done when: an issue is saved even if the sender raises; retry sends it; payload validates against `support_issue.v1` and carries no issue content.
 
 ## M4 Catalogue and viewer on stub data
 

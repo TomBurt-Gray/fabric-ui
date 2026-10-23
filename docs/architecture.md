@@ -100,19 +100,14 @@ Implemented in M2 (`app/audit/`).
 
 ### Support issues
 
-* `SupportIssue`: reference (human friendly, e.g. date plus sequence), status, category, severity, description, page URL, filters, correlation ID, user agent, actor object ID, created time, version.
-* `EmailOutbox`: issue, status (pending, sent, failed), attempts, last error, next attempt time.
-* Flow: save issue and outbox row in one transaction; `transaction.on_commit` triggers the send; failures stay pending for the retry job.
-* Email via Microsoft Graph `sendMail` from a configured sending mailbox using the managed identity. The Mail.Send application permission must be scoped to that one mailbox, never tenant wide.
-* Email body: readable summary plus a JSON payload, for example:
+Implemented in M3 (`app/support/`).
 
-```json
-{"schema": "support_issue.v1", "reference": "SUP-20261022-0007", "environment": "internal_dev",
- "category": "data", "severity": "medium", "description": "...", "page": "/tables/gold.fact_trades",
- "filters": {}, "correlation_id": "...", "created_utc": "..."}
-```
-
-* Option for strict clients: email carries only the reference; details are viewed in the app by the `support` role.
+* **Capture.** "Report an issue" on every page opens a dialog (HTMX, with a full page fallback at `/support/new`). Users choose a type (Incident, Service request, Defect, Enhancement; values match the support tracker), subject, description, optional expected and actual behaviour, steps and workaround, and impact flags. No priority (D23). Captured automatically: page path and its query string as filters, the page's correlation ID, user agent, requester from the principal. Rate limited per user per hour.
+* **Store first (FR07, D06).** `support.service.raise_issue` saves `SupportIssue`, a `Delivery` outbox row and a `support.issue_raised` audit event in one `audited_action` transaction. Reference `{prefix}-{YYYYMMDD}-{id:06d}`, for example `FUI-20261023-000007`, never in square brackets so it cannot clash with the tracker's own `[INC-23]` threading.
+* **Contract (D24).** `app/support/schemas/support_issue.v1.json` (JSON Schema) with a sample beside it. Reference level only: reference, environment, source system, type, subject, requester name and email, impact flags, created time, correlation ID, link to the issue in the app. No description, page, filters or data (D22). The tracker imports idempotently using the reference as its external reference.
+* **Delivery (FR08).** `Sender` interface: `ConsoleSender` locally, `GraphSender` in Azure (`POST /users/{sender}/sendMail` with the managed identity; JSON attachment; `x-fui-reference` header). First attempt after commit; `manage.py send_outbox` retries with backoff (1, 5, 15, 60 minutes, then hourly; failed after 10 attempts). Rows are locked while sending so runners never double send. A tracker API sender can replace email without other changes. Mail.Send must be scoped to the sending mailbox only, never tenant wide.
+* **Email wording** comes from `config/support.example.yaml` (`email_body` with whitelisted placeholders, validated at startup). Changes go through an enhancement ticket and a release (D21).
+* **Support role.** `/support/issues` and `/support/issues/<reference>` show full detail and delivery status; each detail view is audited (`support.issue_viewed`).
 
 ### Reports and exports
 

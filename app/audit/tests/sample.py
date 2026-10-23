@@ -31,5 +31,5 @@ def change(request: HttpRequest) -> HttpResponse:
 
 urlpatterns = [
     path("change", change),
-    path("", include("core.urls")),
+    path("", include("fabric_ui.urls")),
 ]
