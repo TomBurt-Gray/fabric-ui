@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Issue sent | {{ branding.app_name }}{% endblock %}
+
+{% block content %}
+<h1>Report an issue</h1>
+<div class="notice" role="status">
+  <h2>Issue sent to support</h2>
+  <p>Your reference is <strong class="reference">{{ issue.reference }}</strong>. Quote it if you contact support about this issue.</p>
+  <p>Support will review it, set a priority and reply by email.</p>
+  <p><a href="{{ issue.page_url|default:'/' }}">Back to where you were</a></p>
+</div>
+{% endblock %}

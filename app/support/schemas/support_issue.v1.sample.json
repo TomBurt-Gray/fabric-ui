@@ -1,0 +1,18 @@
+{
+  "schema": "support_issue.v1",
+  "reference": "FUI-20261023-000007",
+  "environment": "internal_dev",
+  "source_system": "fabric-ui",
+  "type": "defect",
+  "subject": "Export button does nothing on the trades table",
+  "requester": {"name": "Example User", "email": "example.user@example.test"},
+  "impact": {
+    "processing_stopped": false,
+    "deadline_at_risk": true,
+    "integrity_in_doubt": false,
+    "regulatory_exposure": false
+  },
+  "created_utc": "2026-10-23T09:15:00Z",
+  "correlation_id": "4f9c2b7e1a3d4e5f8a9b0c1d2e3f4a5b",
+  "issue_url": "https://app.example.test/support/issues/FUI-20261023-000007"
+}

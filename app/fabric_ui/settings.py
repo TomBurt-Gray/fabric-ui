@@ -43,6 +43,7 @@ CONFIG_DIR = Path(os.environ.get("CONFIG_DIR") or BASE_DIR.parent / "config")
 BRANDING_CONFIG = Path(os.environ.get("BRANDING_CONFIG") or CONFIG_DIR / "branding.example.yaml")
 BRANDING_ASSETS_DIR = CONFIG_DIR / "branding"
 AUDIT_CONFIG = Path(os.environ.get("AUDIT_CONFIG") or CONFIG_DIR / "audit.example.yaml")
+SUPPORT_CONFIG = Path(os.environ.get("SUPPORT_CONFIG") or CONFIG_DIR / "support.example.yaml")
 
 # No django.contrib.auth or sessions: identity comes only from Entra via Easy Auth (D16).
 INSTALLED_APPS = [

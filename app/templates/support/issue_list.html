@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Support issues | {{ branding.app_name }}{% endblock %}
+
+{% block content %}
+<h1>Support issues</h1>
+<p class="muted">Most recent {{ limit }} issues. Opening an issue is recorded in the audit log.</p>
+{% if issues %}
+<table class="data-table">
+  <caption class="visually-hidden">Support issues, newest first</caption>
+  <thead>
+    <tr><th scope="col">Reference</th><th scope="col">Raised</th><th scope="col">Type</th><th scope="col">Subject</th><th scope="col">Raised by</th><th scope="col">Delivery</th></tr>
+  </thead>
+  <tbody>
+    {% for issue in issues %}
+    <tr>
+      <td><a href="{% url 'support:issue_detail' issue.reference %}">{{ issue.reference }}</a></td>
+      <td>{{ issue.created_at|date:"d M Y H:i" }}</td>
+      <td>{{ issue.get_type_display }}</td>
+      <td>{{ issue.subject }}</td>
+      <td>{{ issue.requester_name }}</td>
+      <td>{% for delivery in issue.deliveries.all %}{{ delivery.get_status_display }}{% endfor %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No issues have been raised yet.</p>
+{% endif %}
+{% endblock %}

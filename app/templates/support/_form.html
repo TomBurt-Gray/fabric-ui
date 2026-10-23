@@ -1,0 +1,38 @@
+<form class="issue-form" method="post" action="{% url 'support:new_issue' %}"
+      hx-post="{% url 'support:new_issue' %}" hx-target="#issue-dialog-body">
+  {% csrf_token %}
+  {{ form.page }}{{ form.page_correlation_id }}
+  <p class="muted">Your page and the time are attached automatically. Support will set the priority after reviewing your issue.</p>
+  {% if form.non_field_errors %}<div class="notice notice-error" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+  <fieldset>
+    <legend>What kind of issue is it?</legend>
+    {% for choice in form.type %}
+    <label class="choice">{{ choice.tag }} <span><strong>{{ choice.choice_label }}</strong>
+      {% for value, text in guidance.items %}{% if value == choice.data.value %}<span class="hint">{{ text }}</span>{% endif %}{% endfor %}</span></label>
+    {% endfor %}
+    {{ form.type.errors }}
+  </fieldset>
+
+  {% include "support/_field.html" with field=form.subject %}
+  {% include "support/_field.html" with field=form.description %}
+
+  <div data-show-for="incident defect">
+    {% include "support/_field.html" with field=form.expected_behaviour %}
+    {% include "support/_field.html" with field=form.actual_behaviour %}
+    {% include "support/_field.html" with field=form.steps_to_reproduce %}
+  </div>
+  {% include "support/_field.html" with field=form.workaround %}
+
+  <fieldset>
+    <legend>Impact <span class="muted">(tick any that apply)</span></legend>
+    <label class="choice">{{ form.processing_stopped }} {{ form.processing_stopped.label }}</label>
+    <label class="choice">{{ form.deadline_at_risk }} {{ form.deadline_at_risk.label }}</label>
+    <label class="choice">{{ form.integrity_in_doubt }} {{ form.integrity_in_doubt.label }}</label>
+    <label class="choice">{{ form.regulatory_exposure }} {{ form.regulatory_exposure.label }}</label>
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="submit" class="button">Send to support</button>
+  </div>
+</form>

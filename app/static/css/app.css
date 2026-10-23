@@ -111,10 +111,107 @@ main {
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.muted { color: var(--muted); }
+
+.issue-dialog {
+  width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 4rem);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.issue-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+
+.dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dialog-head h2 { margin: 0; }
+
+.dialog-close {
+  border: 0;
+  background: none;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.issue-form fieldset {
+  margin: 1rem 0;
+  padding: 0;
+  border: 0;
+}
+
+.issue-form legend { font-weight: 600; margin-bottom: 0.4rem; }
+
+.choice {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.35rem 0;
+}
+
+.hint {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.field { margin: 0.9rem 0; }
+
+.field label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+
+.field input[type="text"],
+.field textarea {
+  width: 100%;
+  padding: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
   font: inherit;
 }
 
-.report-issue:disabled { cursor: not-allowed; opacity: 0.7; }
+.field-error input,
+.field-error textarea { border-color: #b10e1e; }
+
+.error { color: #b10e1e; margin: 0.25rem 0 0; }
+
+.form-actions { margin-top: 1rem; }
+
+button.button { border: 0; font: inherit; cursor: pointer; }
+
+.reference { font-family: ui-monospace, Consolas, monospace; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1.5rem;
+}
+
+.detail-list dt { font-weight: 600; }
+
+.detail-list dd { margin: 0; overflow-wrap: anywhere; }
+
+.pre { white-space: pre-wrap; }
 
 .notice {
   padding: 1rem 1.25rem;

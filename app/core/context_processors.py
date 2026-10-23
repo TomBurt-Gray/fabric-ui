@@ -13,7 +13,10 @@ class NavItem:
     roles: frozenset[Role]
 
 
-NAV_ITEMS = (NavItem("Home", "home", frozenset(Role)),)
+NAV_ITEMS = (
+    NavItem("Home", "home", frozenset(Role)),
+    NavItem("Support issues", "support:issue_list", frozenset({Role.SUPPORT})),
+)
 
 
 def visible_nav(principal: Principal | None, items: tuple[NavItem, ...] = NAV_ITEMS) -> list:

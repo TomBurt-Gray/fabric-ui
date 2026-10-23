@@ -1,0 +1,26 @@
+# Support issue settings per environment. Synthetic example: copy per environment and point
+# SUPPORT_CONFIG at the copy. Mailboxes are placeholders until confirmed (open question Q4).
+# Changes to the email wording go through an enhancement ticket and a reviewed release (D21).
+reference_prefix: FUI
+delivery: console            # console (logs the email) | graph (Microsoft Graph sendMail)
+sender_mailbox: support-sender@example.test
+recipient_mailbox: support@example.test
+app_base_url: http://localhost:8000
+rate_limit_per_hour: 10
+# Placeholders: {app_name} {environment} {reference} {type_label} {subject}
+# {requester_name} {requester_email} {created_utc} {impact_summary} {issue_url}
+# Issue details (description, page, filters) never go in the email (D22).
+email_body: |
+  A new issue was raised in {app_name} ({environment}).
+
+  Reference: {reference}
+  Type: {type_label}
+  Subject: {subject}
+  Raised by: {requester_name} <{requester_email}>
+  Raised at: {created_utc}
+  Impact reported: {impact_summary}
+
+  Details stay in the application. Support staff can view them at:
+  {issue_url}
+
+  The attached {reference}.support_issue.v1.json follows the support_issue.v1 schema.

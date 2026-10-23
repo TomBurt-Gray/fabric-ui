@@ -1,6 +1,6 @@
 """URLconf for tests: a view with no access declaration and an admin only view.
 
-The real core URLs are included because the layout links to them.
+The real URLs are included because the layout links to them.
 """
 
 from django.http import HttpRequest, HttpResponse
@@ -22,5 +22,5 @@ def admin_only(request: HttpRequest) -> HttpResponse:
 urlpatterns = [
     path("undeclared", undeclared),
     path("admin-only", admin_only),
-    path("", include("core.urls")),
+    path("", include("fabric_ui.urls")),
 ]

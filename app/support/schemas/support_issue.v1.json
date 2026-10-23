@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "support_issue.v1",
+  "title": "Support issue v1",
+  "description": "Attachment sent with each support issue email. Carries no issue content: description, page and filters stay in the client's application (D22). Import idempotently using 'reference' as the external reference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "reference", "environment", "source_system", "type", "subject", "requester", "impact", "created_utc", "correlation_id", "issue_url"],
+  "properties": {
+    "schema": {"const": "support_issue.v1"},
+    "reference": {"type": "string", "pattern": "^[A-Z]{2,6}-[0-9]{8}-[0-9]{6,}$"},
+    "environment": {"type": "string", "minLength": 1},
+    "source_system": {"type": "string", "minLength": 1},
+    "type": {"enum": ["incident", "request", "defect", "enhancement"]},
+    "subject": {"type": "string", "minLength": 1, "maxLength": 300},
+    "requester": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "email"],
+      "properties": {
+        "name": {"type": "string"},
+        "email": {"type": "string"}
+      }
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["processing_stopped", "deadline_at_risk", "integrity_in_doubt", "regulatory_exposure"],
+      "properties": {
+        "processing_stopped": {"type": "boolean"},
+        "deadline_at_risk": {"type": "boolean"},
+        "integrity_in_doubt": {"type": "boolean"},
+        "regulatory_exposure": {"type": "boolean"}
+      }
+    },
+    "created_utc": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+    "correlation_id": {"type": "string"},
+    "issue_url": {"type": "string", "pattern": "^https?://"}
+  }
+}

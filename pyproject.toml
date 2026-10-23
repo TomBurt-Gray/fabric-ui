@@ -16,6 +16,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "jsonschema==4.26.0",
     "pytest==9.1.1",
     "pytest-django==4.14.0",
     "ruff==0.17.2",
@@ -32,8 +33,9 @@ target-version = "py312"
 extend-exclude = ["docs", "**/migrations"]
 
 [tool.ruff.lint.per-file-ignores]
-# Django declares Meta options such as indexes as class level lists.
+# Django declares Meta options such as indexes and form fields as class level lists.
 "**/models.py" = ["RUF012"]
+"**/forms.py" = ["RUF012"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "fabric_ui.settings"
