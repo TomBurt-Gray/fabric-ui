@@ -115,3 +115,23 @@ main {
 }
 
 .report-issue:disabled { cursor: not-allowed; opacity: 0.7; }
+
+.notice {
+  padding: 1rem 1.25rem;
+  border-left: 6px solid var(--brand-primary, #1f3a5f);
+  background: #f3f5f8;
+}
+
+.notice-error { border-left-color: #b10e1e; }
+
+.notice h2 { margin-top: 0; }
+
+.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: var(--brand-primary, #1f3a5f);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}

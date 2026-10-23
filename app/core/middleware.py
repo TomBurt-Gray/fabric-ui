@@ -3,6 +3,8 @@
 import logging
 from collections.abc import Callable
 
+from audit.events import AccessDenied, Outcome
+from audit.service import AuditUnavailable, record
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
@@ -44,10 +46,25 @@ class EasyAuthMiddleware:
             return HttpResponse("Authentication required.", status=401, content_type="text/plain")
         if rule is None:
             logger.error("View %s declares no access rule; denied", view_func.__qualname__)
-            return forbidden(request)
+            return self._deny(request, required=(), reason="no_access_rule")
         if not request.principal.has_any(rule.roles):
-            return forbidden(request)
+            return self._deny(request, required=sorted(rule.roles), reason="missing_role")
         return None
+
+    def _deny(self, request: HttpRequest, required: list | tuple, reason: str) -> HttpResponse:
+        """Audit the denial; the denial stands even if the audit write fails."""
+        event = AccessDenied(path=request.path[:512], required_roles=tuple(required), reason=reason)
+        try:
+            record(
+                request,
+                event,
+                target=request.path,
+                outcome=Outcome.DENIED,
+                message="Access denied",
+            )
+        except AuditUnavailable:
+            logger.error("Access to %s denied but the audit write failed", request.path)
+        return forbidden(request)
 
 
 class SecurityHeadersMiddleware:

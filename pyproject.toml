@@ -31,6 +31,10 @@ target-version = "py312"
 # Design docs contain illustrative snippets; migrations are generated.
 extend-exclude = ["docs", "**/migrations"]
 
+[tool.ruff.lint.per-file-ignores]
+# Django declares Meta options such as indexes as class level lists.
+"**/models.py" = ["RUF012"]
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "fabric_ui.settings"
 django_find_project = false

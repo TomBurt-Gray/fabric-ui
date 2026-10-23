@@ -41,7 +41,7 @@ Commercial approach: build a working PoC internally, demo it to the client with 
 | FR07 | "Report an issue" available on every page. Captures category, severity, description, page URL, current filters, correlation ID, user agent and timestamp automatically. | PoC | Issue saved to the database before any email is attempted. User sees a reference number. |
 | FR08 | Each new issue sends an email to a configured support mailbox with a readable summary and a JSON payload our support team can turn into a ticket. | PoC | Email sent only after the database commit. Failed sends are retried from an outbox. No issue is lost if email fails. |
 | FR09 | Users can see their own issues and status. | MVP | |
-| FR10 | Every request and every domain event (export, report run, issue raised, config change) writes an audit event to an append only store. | PoC | Audit rows cannot be updated or deleted (SQL ledger append only table in Azure; enforced by the app on SQLite). |
+| FR10 | Every business action writes an audit event to an append only store in the same transaction as the action: access denied, data viewed, exports and report runs, issues raised, config changes (trade lifecycle events in Phase 2). Plain request logs go to Application Insights, not the audit store. | PoC | Audit rows cannot be updated or deleted (SQL ledger append only table in Azure; model and database triggers on SQLite). If the audit write fails, the action does not happen and the user sees an error with Try again. |
 | FR11 | Admin audit viewer with filters by user, action, date. | MVP | |
 | FR12 | Stub data mode: the catalogue and viewer read synthetic tables instead of Fabric, switched by config. | PoC | Full demo possible with no Fabric connection. |
 | FR20 | Trade workflow: proposed, authorised, signed off, with segregation of duties (proposer cannot authorise own trade) and optimistic locking. | Phase 2 | Design the audit and roles now so this is additive. |
@@ -55,7 +55,7 @@ Commercial approach: build a working PoC internally, demo it to the client with 
 |:--|:--|
 | NFR01 Security | Private by default: no public endpoints, managed identities, no keys or passwords, Entra only auth on SQL, HTTPS only, TLS 1.2 minimum. |
 | NFR02 Maintainability | Django LTS, vendored HTMX, minimal runtime dependencies. Upgrades planned LTS to LTS. |
-| NFR03 Auditability | Tamper evident audit (SQL ledger), periodic archive to immutable blob storage, retention set per client. Immutable stores hold pseudonymous user IDs (Entra object ID), not names or emails, so GDPR erasure can be handled in the mutable user profile table. |
+| NFR03 Auditability | Tamper evident audit (SQL ledger) in the client's own Azure SQL, periodic archive to immutable blob storage, retention set per client. Immutable stores identify users by Entra object ID, not names or emails. Client IP and user agent are captured behind a config switch (`capture_network`) for security investigation; enabling it in production needs client compliance approval because ledger rows cannot be erased (D18). |
 | NFR04 Concurrency | Database transactions everywhere; optimistic locking (version column) on any editable record. Fixes the VBA corruption problem by design. |
 | NFR05 Configurability | Client and environment differences only in tfvars and YAML. |
 | NFR06 Performance | Server side paging (default 50 rows per page) and a query timeout (default 30 seconds). Both configurable. |
