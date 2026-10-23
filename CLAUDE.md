@@ -46,7 +46,11 @@ infra/
   stack/              root module composing everything
   envs/               one tfvars per environment, e.g. internal_dev.tfvars
 pipelines/            Azure DevOps YAML (infra plan/apply, app build/deploy)
-docs/                 these context files
+docs/                 these context files (human owned)
+  generated/          written only by the docs sync agent; never edit by hand
+.claude/              CI agent skills and settings (see docs/agents.md)
+scripts/agents/       deterministic checks for the CI agents
+.github/workflows/    CI agent wrappers (GitHub Actions)
 Dockerfile
 ```
 

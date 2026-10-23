@@ -1,0 +1,76 @@
+name: PR review agent
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CLAUDE_CODE_VERSION: "2.1.302"
+  REVIEW_MODEL: claude-opus-5-5
+  REVIEW_BUDGET_USD: "3"
+
+jobs:
+  review:
+    # Skip drafts, and never expose the API key to pull requests from forks.
+    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prepare review inputs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p .agent
+          git diff --no-color "$BASE_SHA"...HEAD > .agent/pr.diff
+          # Use the rules and agent config from main, so a PR cannot weaken its own review.
+          if git cat-file -e "$BASE_SHA:.claude/skills/pr-review/SKILL.md" 2>/dev/null; then
+            git checkout "$BASE_SHA" -- CLAUDE.md .claude scripts/agents
+          fi
+
+      - name: Install Claude Code
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s "$CLAUDE_CODE_VERSION"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run review agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude --version
+          claude -p "/pr-review" \
+            --model "$REVIEW_MODEL" \
+            --settings .claude/ci-settings.json \
+            --allowedTools "Read,Glob,Grep" \
+            --permission-mode dontAsk \
+            --output-format json \
+            --json-schema "$(cat .claude/skills/pr-review/findings.schema.json)" \
+            --max-budget-usd "$REVIEW_BUDGET_USD" \
+            --no-session-persistence \
+            > .agent/result.json
+          jq -r '"Agent cost (USD, estimate): \(.total_cost_usd)"' .agent/result.json >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post findings and apply hard rule gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/agents/post_review.py \
+            --result .agent/result.json \
+            --diff .agent/pr.diff \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}" \
+            --commit "${{ github.event.pull_request.head.sha }}"
