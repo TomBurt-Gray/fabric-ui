@@ -20,8 +20,9 @@ env:
 
 jobs:
   review:
+    # Off unless the repository variable CLAUDE_AGENTS_ENABLED is "true".
     # Skip drafts, and never expose the API key to pull requests from forks.
-    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ vars.CLAUDE_AGENTS_ENABLED == 'true' && !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

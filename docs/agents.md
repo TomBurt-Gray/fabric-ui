@@ -34,7 +34,8 @@ Human written docs in `docs/*.md` (requirements, decisions, ADRs, threat model) 
 
 ## Configuration
 
-* **Repository secret:** `ANTHROPIC_API_KEY`.
+* **On/off switch:** repository variable `CLAUDE_AGENTS_ENABLED` set to `true`. When unset, both jobs are skipped.
+* **Repository secret:** `ANTHROPIC_API_KEY`, issued from Mirador's Anthropic organisation, never a personal account (open question Q15).
 * **Repository setting:** "Allow GitHub Actions to create and approve pull requests" must be on, so the docs agent can open its PR.
 * **Workflow `env` blocks:** model, budget and version pins.
 * **Docs PR does not trigger workflows:** PRs opened with the workflow token do not trigger other workflows, so the docs PR is not reviewed by the review agent.

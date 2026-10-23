@@ -25,6 +25,7 @@ Do not guess these. Use the stated assumption until answered, and flag anything 
 | Q12 | Support: in app ticket draft with captured context (URL, filters, correlation ID, visible rows), email carries the reference only. How is the draft generated (template or AI) and which ticketing system is the target? | Settle at M3 planning, then update requirements and architecture |
 | Q13 | Microsoft ODBC Driver 18 requires accepting the Microsoft EULA (`ACCEPT_EULA=Y`). Who authorises this? | Install step commented out in the Dockerfile; blocks M5 |
 | Q14 | mssql-django 2.x adds mssql-python as a dependency | Pinned 1.8.0 (pyodbc only); revisit as a separate decision |
+| Q15 | CI agents need an Anthropic API key from Mirador's organisation (not a personal account), ideally a dedicated workspace with a spend limit. Who can issue it? | Agents disabled (`CLAUDE_AGENTS_ENABLED` unset) until a company key exists |
 
 ## Client (answered later via the Client Discovery Checklist)
 
