@@ -3,6 +3,8 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -27,11 +29,23 @@ if not SECRET_KEY and DEBUG:
 ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = _env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
+# Local development only: fake Easy Auth principal (see core.dev_auth). Synthetic defaults.
+DEV_AUTH_ENABLED = _env_bool("DEV_AUTH_ENABLED")
+if DEV_AUTH_ENABLED and not DEBUG:
+    raise ImproperlyConfigured("DEV_AUTH_ENABLED requires DJANGO_DEBUG to be true.")
+DEV_AUTH_ROLES = _env_list("DEV_AUTH_ROLES") or ["viewer"]
+DEV_AUTH_NAME = os.environ.get("DEV_AUTH_NAME", "Dev User")
+DEV_AUTH_EMAIL = os.environ.get("DEV_AUTH_EMAIL", "dev.user@example.test")
+DEV_AUTH_OBJECT_ID = os.environ.get("DEV_AUTH_OBJECT_ID", "00000000-0000-0000-0000-000000000001")
+
+# Per environment config files (branding now; display config in M4).
+CONFIG_DIR = Path(os.environ.get("CONFIG_DIR") or BASE_DIR.parent / "config")
+BRANDING_CONFIG = Path(os.environ.get("BRANDING_CONFIG") or CONFIG_DIR / "branding.example.yaml")
+BRANDING_ASSETS_DIR = CONFIG_DIR / "branding"
+
+# No django.contrib.auth or sessions: identity comes only from Entra via Easy Auth (D16).
 INSTALLED_APPS = [
-    "django.contrib.auth",
     "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
     "django.contrib.staticfiles",
     "core",
     "audit",
@@ -43,13 +57,15 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    "core.correlation.CorrelationIdMiddleware",
+    "core.middleware.SecurityHeadersMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.EasyAuthMiddleware",
 ]
+if DEV_AUTH_ENABLED:
+    MIDDLEWARE.insert(0, "core.dev_auth.DevPrincipalMiddleware")
 
 ROOT_URLCONF = "fabric_ui.urls"
 WSGI_APPLICATION = "fabric_ui.wsgi.application"
@@ -62,8 +78,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+                "core.context_processors.layout",
             ],
         },
     },
@@ -86,7 +101,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "static", ("branding", BRANDING_ASSETS_DIR)]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
@@ -107,6 +122,18 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "filters": {"correlation_id": {"()": "core.correlation.CorrelationIdFilter"}},
+    "formatters": {
+        "standard": {
+            "format": "%(asctime)s %(levelname)s %(name)s [%(correlation_id)s] %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": ["correlation_id"],
+            "formatter": "standard",
+        },
+    },
     "root": {"handlers": ["console"], "level": "INFO"},
 }

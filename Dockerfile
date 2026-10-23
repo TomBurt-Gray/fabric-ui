@@ -48,6 +48,7 @@ RUN groupadd --system --gid 10001 app \
 
 WORKDIR /srv/app
 COPY --from=builder /srv/.venv /srv/.venv
+COPY config/ /srv/config/
 COPY app/ ./
 RUN python manage.py collectstatic --noinput
 

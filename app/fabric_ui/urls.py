@@ -1,5 +1,7 @@
-"""Root URL configuration. Feature URLs are added from M1 onwards."""
+"""Root URL configuration. Every view must declare access (see core.access)."""
 
-from django.urls import URLPattern, URLResolver
+from django.urls import include, path
 
-urlpatterns: list[URLPattern | URLResolver] = []
+urlpatterns = [
+    path("", include("core.urls")),
+]

@@ -28,8 +28,8 @@ package = false
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-# Design docs contain illustrative snippets, not code.
-extend-exclude = ["docs"]
+# Design docs contain illustrative snippets; migrations are generated.
+extend-exclude = ["docs", "**/migrations"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "fabric_ui.settings"
@@ -37,6 +37,8 @@ django_find_project = false
 pythonpath = ["app", "scripts"]
 testpaths = ["app", "scripts"]
 addopts = "-ra --strict-markers"
+# Unit tests do not run collectstatic, so WhiteNoise finds no STATIC_ROOT.
+filterwarnings = ["ignore:No directory at:UserWarning"]
 markers = [
     "integration: needs Azure SQL or Fabric; skipped unless configured",
 ]
