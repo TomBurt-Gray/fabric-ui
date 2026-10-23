@@ -34,8 +34,8 @@ extend-exclude = ["docs"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "fabric_ui.settings"
 django_find_project = false
-pythonpath = ["app"]
-testpaths = ["app"]
+pythonpath = ["app", "scripts"]
+testpaths = ["app", "scripts"]
 addopts = "-ra --strict-markers"
 markers = [
     "integration: needs Azure SQL or Fabric; skipped unless configured",

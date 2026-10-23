@@ -75,3 +75,4 @@ Work one milestone at a time. Start each in plan mode, confirm the plan, then bu
 
 * Demo script: sign in, browse catalogue, filter a large table, export, run a report, raise an issue (stub content), show the audit trail, show the Terraform plan.
 * Short README section for the client walkthrough.
+* Tighten repository controls before the demo: remove owner bypass on the `main` ruleset, make the PR review agent a required status check, require 1 approval once a second developer joins, consider signed commits and code scanning.

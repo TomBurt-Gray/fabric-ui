@@ -22,6 +22,9 @@ app/staticfiles/
 *.tfplan
 crash.log
 
+# CI agent working files
+.agent/
+
 # Editors and OS
 .vscode/
 .idea/
