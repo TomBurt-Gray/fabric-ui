@@ -1,0 +1,23 @@
+# Display config example. Synthetic names only; copy per environment.
+# Schema and validation arrive in M4.
+source: stub              # fabric | stub
+schema_allow: [dbo, gold]
+page_size: 50
+query_timeout_seconds: 30
+tables:
+  gold.fact_trades:
+    label: Trades
+    description: Daily trades from the gold layer
+    hidden_columns: [_load_ts]
+    columns:
+      notional: {label: Notional, format: currency, currency: GBP}
+      trade_date: {label: Trade date, format: date}
+    default_sort: [{column: trade_date, direction: desc}]
+reports:
+  daily_trades:
+    label: Daily trades
+    table: gold.fact_trades
+    columns: [trade_date, notional]
+    filters: [{column: trade_date, op: eq, value: "@today"}]
+    schedule: "0 7 * * 1-5"   # MVP
+hidden_tables: [gold.tmp_staging]
