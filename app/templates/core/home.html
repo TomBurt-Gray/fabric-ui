@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Welcome, {{ principal.display_name }}</h1>
+<p>Your roles: {{ roles|join:", " }}.</p>
+<p>The data catalogue and reports will appear here as they are built.</p>
+{% endblock %}

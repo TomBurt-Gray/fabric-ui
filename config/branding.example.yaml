@@ -1,0 +1,7 @@
+# Branding per environment. Synthetic example: copy per environment and point
+# BRANDING_CONFIG at the copy. Logo file lives in config/branding/.
+app_name: Gold Data Portal
+organisation: Example Organisation
+logo: logo.svg
+primary_colour: "#1F3A5F"
+accent_colour: "#C8A24A"

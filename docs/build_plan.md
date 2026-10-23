@@ -5,7 +5,7 @@ Work one milestone at a time. Start each in plan mode, confirm the plan, then bu
 | # | Milestone | Status |
 |:--|:--|:--|
 | M0 | Repo scaffold | ruff, pytest and `manage.py check` pass; Docker build pending (Docker not installed) |
-| M1 | Django foundation: auth, roles, layout, correlation IDs | Not started |
+| M1 | Django foundation: auth, roles, layout, correlation IDs | Done locally (77 tests); claim types to verify in internal dev |
 | M2 | Audit | Not started |
 | M3 | Support issues and email | Not started |
 | M4 | Catalogue and dynamic table viewer on stub data | Not started |

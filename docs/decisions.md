@@ -17,3 +17,6 @@ Decisions already agreed. Do not change these without asking; propose an alterna
 | D11 | Fabric infrastructure as code out of scope for now | Focus on UI and Azure infra PoC | Terraform Fabric provider and fabric cicd (revisit later for workspace bootstrapping) |
 | D12 | Pseudonymous user IDs (Entra object ID) in immutable stores | Lets GDPR erasure be handled in the mutable profile table | Names or emails in ledger and WORM storage |
 | D13 | PoC on our internal environment and data | No client data risk during build and demo | Building against client data before approval |
+| D14 | Roles are Entra app roles (`viewer`, `report_user`, `admin`, `support`) assigned to groups | Readable `roles` claim; no group claim overage; access managed in Entra | Group membership claims mapped by group ID (overage above the claim limit, opaque IDs). Note: assigning groups to app roles needs Entra ID P1 or higher |
+| D15 | Roles are independent; none implies another | Explicit, easy to audit | Hierarchies (report_user includes viewer, admin includes all) |
+| D16 | No Django auth, sessions or local accounts; identity only from Easy Auth headers | No password tables or local sign in to secure or explain | Django users synced from Entra |

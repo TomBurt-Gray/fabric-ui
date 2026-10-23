@@ -18,7 +18,7 @@ Commercial approach: build a working PoC internally, demo it to the client with 
 * Client staff signing in with Entra ID, on company laptops connected to a corporate VPN.
 * Under 20 concurrent users.
 * Roles: `viewer` (browse), `report_user` (browse, export, run reports), `admin` (audit viewer, config), `support` (our team; view issues).
-* Roles come from Entra app roles or group membership, never assigned inside the app.
+* Roles come from Entra app roles assigned to groups, never assigned inside the app (D14). Roles are independent: no role implies another (D15).
 
 ## Phases
 

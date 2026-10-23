@@ -37,6 +37,8 @@ Outbound path: App Service VNet integration → client network and egress firewa
 * Production: App Service built in authentication with Entra, set to require authentication. Django reads the principal headers injected by the platform (`X-MS-CLIENT-PRINCIPAL`, base64 JSON with claims including roles; `X-MS-CLIENT-PRINCIPAL-ID`). Verify header names and claim shapes against current Microsoft Learn docs before implementing.
 * Trust those headers only when Easy Auth is enforced. The private endpoint plus require authentication means requests cannot bypass it.
 * Local dev: a dev auth shim injects a fake principal from settings. It must refuse to load when `DEBUG` is false or when running on App Service (detect the `WEBSITE_SITE_NAME` environment variable).
+* Implemented (M1): `core.principal` parses the principal (accepts short and mapped URI claim types); `core.middleware.EasyAuthMiddleware` returns 401 without a principal and enforces per view access rules from `core.access` (`require_roles`, `any_role`, `public`). Views without a rule are denied. No `django.contrib.auth` or sessions (D16).
+* Verify in internal dev (M8): the exact claim types App Service emits for object ID and roles, and whether `/healthz` must be excluded from Easy Auth for health probes.
 * `UserProfile` (mutable) maps Entra object ID to display name and email for the UI. Immutable stores only ever hold the object ID.
 
 ### Data source interface
